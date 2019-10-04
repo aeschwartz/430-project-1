@@ -48,6 +48,9 @@
         case 404: //not found
           content.innerHTML = `<b>Resource Not Found</b>`;
           break;
+        case 409: //user already created
+          content.innerHTML = `<b>Username already exists</b>`;
+          break;
         default: //any other status code
           content.innerHTML = `Error code not implemented by client.`;
           break;
@@ -56,16 +59,18 @@
       if(parseResponse)
         parseJSON(xhr, content);
     };
-    //function to send our post request
-    const sendPost = (e, nameForm) => {
+        //function to send our post request
+    const sendPost = (e, gameForm) => {
       //grab the forms action (url to go to)
       //and method (HTTP method - POST in this case)
-      const nameAction = nameForm.getAttribute('action');
-      const nameMethod = nameForm.getAttribute('method');
+      const nameAction = gameForm.getAttribute('action');
+      const nameMethod = gameForm.getAttribute('method');
       
       //grab the form's name and age fields so we can check user input
-      const nameField = nameForm.querySelector('#nameField');
-      const ageField = nameForm.querySelector('#ageField');
+      const nameField = gameForm.querySelector('#nameField');
+
+      // temp solution for storing user
+      localStorage.username = nameField.value;
       
       //create a new Ajax request (remember this is asynchronous)
       const xhr = new XMLHttpRequest();
@@ -91,7 +96,7 @@
       //So ours might look like  name=test&age=22
       //Again the 'name' fields in the form are the variable names in the string
       //and the variable names the server will look for.
-      const formData = `name=${nameField.value}&age=${ageField.value}`;
+      const formData = `name=${nameField.value}`;
       
       //send our request with the data
       xhr.send(formData);
@@ -101,25 +106,85 @@
       //return false to prevent the browser from trying to change page
       return false;
     };
-    //function to send request
-    const requestUpdate = (e, userForm) => {
-      //grab url field 
-      const url = userForm.querySelector('#urlField').value;
-      //grab method selected
-      const method = userForm.querySelector('#methodSelect').value;
+    //function to send our post request
+    const addGamePost = (e, gameForm) => {
+      //grab the forms action (url to go to)
+      //and method (HTTP method - POST in this case)
+      const nameAction = gameForm.getAttribute('action');
+      const nameMethod = gameForm.getAttribute('method');
+      
+      //grab the form's name and age fields so we can check user input
+      const gameField = gameForm.querySelector('#gameField');
+      const status = gameForm.querySelector('#statusSelect').value;
+      
+      //create a new Ajax request (remember this is asynchronous)
+      const xhr = new XMLHttpRequest();
+      //set the method (POST) and url (action field from form)
+      xhr.open(nameMethod, nameAction);
+      
+      //set our request type to x-www-form-urlencoded
+      //which is one of the common types of form data. 
+      //This type has the same format as query strings key=value&key2=value2
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      //set our requested response type in hopes of a JSON response
+      xhr.setRequestHeader ('Accept', 'application/json');
+      
+      //set our function to handle the response
+      xhr.onload = () => handleResponse(xhr, true);
+      
+      //build our x-www-form-urlencoded format. Without ajax the 
+      //browser would do this automatically but it forcefully changes pages
+      //which we don't want.
+      //The format is the same as query strings, so key=value&key2=value2
+      //The 'name' fields from the inputs are the variable names sent to
+      //the server. 
+      //So ours might look like  name=test&age=22
+      //Again the 'name' fields in the form are the variable names in the string
+      //and the variable names the server will look for.
+      const formData = `name=${localStorage.username}&game=${gameField.value}&status=${statusSelect.value}`;
+    
+
+      console.log(formData);
+
+      //send our request with the data
+      xhr.send(formData);
+    
+      //prevent the browser's default action (to send the form on its own)
+      e.preventDefault();
+      //return false to prevent the browser from trying to change page
+      return false;
+    };
+    // function to send request
+    const userUpdate = (e, form) => {
+      const action = form.getAttribute('action');
+      const method = form.getAttribute('method');
       
       //create a new AJAX request (asynchronous)
       const xhr = new XMLHttpRequest();
       //setup connect using the selected method and url
-      xhr.open(method, url);
+      xhr.open(method, action);
       //set accept header in request to application/json
       //The accept header is a comma separated list of
       //accepted response types in order of preference
       //from first to last. You only need to send one
       //but you can send many, separated by commas.
       xhr.setRequestHeader('Accept', 'application/json');
+
+      xhr.responseType = "json";
       //if get request or head request
-      xhr.onload = () => handleResponse(xhr, method === 'get');
+      xhr.onload = (e) => {
+        const content = document.querySelector('#content');
+
+        const obj = xhr.response.users;
+        content.innerHTML = "";
+        for(let user in obj){
+          content.innerHTML = `${content.innerHTML}<h4>${obj[user].name}:</h4><ul>`;
+          for(let game of obj[user].games){
+            content.innerHTML = `${content.innerHTML}<li>${game.name}: ${game.status}</li>`;
+          }
+          content.innerHTML = `${content.innerHTML}</ul>`;
+        }
+      }
       
       //send ajax request
       xhr.send();
@@ -132,49 +197,68 @@
     const init = () => {
       // POST form
       //grab form
-      const nameForm = document.querySelector('#nameForm');
+      const userForm = document.querySelector('#userForm');
       
       //create handler
-      const addUser = (e) => sendPost(e, nameForm);
+      const addUser = (e) => sendPost(e, userForm);
       
       //attach submit event (for clicking submit or hitting enter)
-      nameForm.addEventListener('submit', addUser);
+      userForm.addEventListener('submit', addUser);
 
       // GET/HEAD form
       //grab form
-      const userForm = document.querySelector('#userForm');
+      const gameForm = document.querySelector('#gameForm');
       
       //function to handle our request
-      const getUsers = (e) => requestUpdate(e, userForm);
+      const addGame = (e) => addGamePost(e, gameForm);
       
       //add event listener
-      userForm.addEventListener('submit', getUsers);
+      gameForm.addEventListener('submit', addGame);
+      //grab form
+      const getUserForm = document.querySelector('#getUserForm');
+      
+      //function to handle our request
+      const getUsers = (e) => userUpdate(e, getUserForm);
+      
+      //add event listener
+      getUserForm.addEventListener('submit', getUsers);
     };
     window.onload = init;
   </script>
 </head>
 <body>
   <section id="top">
-    <h3>POST Status Code Tests</h3>
-    <form id="nameForm" action="/addUser" method="post">
-      <label for="name">Name: </label>
+    <h3>BideoGaemList</h3>
+    <form id="userForm" action="/addUser" method="post">
+      <label for="name">Username: </label>
       <input id="nameField" type="text" name="name" />
-      <label for="age">Age: </label>
-      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
       <input type="submit" value="Add User" />
     </form>
-    <form id="userForm" action="/getUsers" method="get">
-      <select id='urlField'>
+    <form id="gameForm" action="/addGame" method="post">
+      <!-- <select id='urlField'>
         <option value='/getUsers'>/getUsers</option>
         <option value='/notReal'>/notReal</option>
+      </select> -->
+      <label for="game">Game Name: </label>
+      <input id="gameField" type="text" name="game" />
+      <select id="statusSelect">
+        <option value="wishlist">Wishlist</option>
+        <option value="playing">Currently Playing</option>
+        <option value="completed">Completed</option>
       </select>
-      <select id="methodSelect">
-        <option value="get">GET</option>
-        <option value="head">HEAD</option>
-      </select>
-      <input type="submit" value="Get User" />
+      <input type="submit" value="Add Game" />
+    </form>
+    <form id="getUserForm" action="/getUsers" method="get">
+      <input type="submit" value="Display Users" />
     </form>
   </section>
+  <!--
+    username create - associate with ur machine - store in localStorage????
+    
+    second form:
+    game name
+    game status -> wishlist, completed, playing - %?
+  -->
   <section id="content">
   </section>
 </body>

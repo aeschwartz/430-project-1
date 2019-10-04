@@ -1,26 +1,28 @@
 {
-  "name": "http-api-assignment-ii",
+  "name": "430-project-1",
   "version": "1.0.0",
   "description": "A simple HTTP API, Part 2: Electric Boogaloo",
   "main": "./src/server.js",
   "scripts": {
     "start": "node ./src/server.js",
     "pretest": "eslint ./src --fix",
-    "test": "echo \"Tests complete\""
+    "test": "echo \"Tests complete\"",
+    "nodemon": "nodemon -e js,html,css --watch .src/ --watch .hosted .src/server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/IGM-RichMedia-at-RIT/http-api-assignment-ii.git"
+    "url": "git+https://github.com/aeschwartz/430-project-1.git"
   },
   "author": "Andrew Schwartz",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/IGM-RichMedia-at-RIT/http-api-assignment-ii/issues"
+    "url": "https://github.com/aeschwartz/430-project-1/issues"
   },
-  "homepage": "https://github.com/IGM-RichMedia-at-RIT/http-api-assignment-ii#readme",
+  "homepage": "https://github.com/aeschwartz/430-project-1#readme",
   "devDependencies": {
     "eslint": "^6.4.0",
     "eslint-config-airbnb": "^18.0.1",
-    "eslint-plugin-import": "^2.18.2"
+    "eslint-plugin-import": "^2.18.2",
+    "nodemon": "^1.19.3"
   }
 }

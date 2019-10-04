@@ -22,42 +22,44 @@ const urlStruct = {
 
 /* taken from body-parse example code */
 const handlePost = (req, res, parsedUrl) => {
-  // if post is to /addUser (our only POST url)
-  if (parsedUrl.pathname === '/addUser') {
-    // const res = res;
+  // uploads come in as a byte stream that we need
+  // to reassemble once it's all arrived
+  const body = [];
 
-    // uploads come in as a byte stream that we need
-    // to reassemble once it's all arrived
-    const body = [];
+  // if the upload stream errors out, just throw a
+  // a bad request and send it back
+  req.on('error', (err) => {
+    console.dir(err);
+    res.statusCode = 400;
+    res.end();
+  });
 
-    // if the upload stream errors out, just throw a
-    // a bad request and send it back
-    req.on('error', (err) => {
-      console.dir(err);
-      res.statusCode = 400;
-      res.end();
+  // on 'data' is for each byte of data that comes in
+  // from the upload. We will add it to our byte array.
+  req.on('data', (chunk) => {
+    body.push(chunk);
+  });
+
+  // on end of upload stream.
+  req.on('end', () => {
+    // combine our byte array (using Buffer.concat)
+    // and convert it to a string value (in this instance)
+    const bodyString = Buffer.concat(body).toString();
+    // since we are getting x-www-form-urlencoded data
+    // the format will be the same as querystrings
+    // Parse the string into an object by field name
+    const bodyParams = query.parse(bodyString);
+
+    // pass to a post function
+    switch(parsedUrl.pathname){
+      case '/addUser':
+        jsonHandler.addUser(req, res, bodyParams);
+        break;
+      case '/addGame':
+        jsonHandler.addGame(req, res, bodyParams);
+        break;
+    }
     });
-
-    // on 'data' is for each byte of data that comes in
-    // from the upload. We will add it to our byte array.
-    req.on('data', (chunk) => {
-      body.push(chunk);
-    });
-
-    // on end of upload stream.
-    req.on('end', () => {
-      // combine our byte array (using Buffer.concat)
-      // and convert it to a string value (in this instance)
-      const bodyString = Buffer.concat(body).toString();
-      // since we are getting x-www-form-urlencoded data
-      // the format will be the same as querystrings
-      // Parse the string into an object by field name
-      const bodyParams = query.parse(bodyString);
-
-      // pass to our addUser function
-      jsonHandler.addUser(req, res, bodyParams);
-    });
-  }
 };
 
 
