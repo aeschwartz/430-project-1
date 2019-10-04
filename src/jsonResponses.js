@@ -25,19 +25,19 @@ const addUser = (req, res, query) => {
   }
 
   // if no error, set default response to 201
-  let responseCode = 201;
+  const responseCode = 201;
 
   // if the name is already a key, don't add them again
   if (users[query.name]) {
-    responseJSON.id = 'alreadyExists'
-    responseJSON.message = "Username already exists."
+    responseJSON.id = 'alreadyExists';
+    responseJSON.message = 'Username already exists.';
     return respond(req, res, 409, responseJSON);
   }
 
   // copy in data regardless
   users[query.name] = {
     name: query.name,
-    games: [],
+    games: {},
   };
   // if response is created, then set our created message
   // and sent response with a message
@@ -69,17 +69,17 @@ const addGame = (req, res, query) => {
   let responseCode = 201;
 
   // if the name is already a key, don't add them again
-  if (users[query.name] && users[query.name].games) responseCode = 204;
+  if (users[query.name] && users[query.name].games[query.game]) responseCode = 204;
 
-  // 
+  //
   const gameObj = {
-    name: query.game
+    name: query.game,
   };
 
-  if(query.status) gameObj.status = query.status;
+  if (query.status) gameObj.status = query.status;
 
   // copy in data regardless
-  users[query.name].games.push(gameObj);
+  users[query.name].games[query.game] = gameObj;
 
   // if response is created, then set our created message
   // and sent response with a message

@@ -179,8 +179,8 @@
         content.innerHTML = "";
         for(let user in obj){
           content.innerHTML = `${content.innerHTML}<h4>${obj[user].name}:</h4><ul>`;
-          for(let game of obj[user].games){
-            content.innerHTML = `${content.innerHTML}<li>${game.name}: ${game.status}</li>`;
+          for(let game in obj[user].games){
+            content.innerHTML = `${content.innerHTML}<li>${obj[user].games[game].name}: ${obj[user].games[game].status}</li>`;
           }
           content.innerHTML = `${content.innerHTML}</ul>`;
         }

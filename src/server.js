@@ -51,15 +51,17 @@ const handlePost = (req, res, parsedUrl) => {
     const bodyParams = query.parse(bodyString);
 
     // pass to a post function
-    switch(parsedUrl.pathname){
+    switch (parsedUrl.pathname) {
       case '/addUser':
         jsonHandler.addUser(req, res, bodyParams);
         break;
       case '/addGame':
         jsonHandler.addGame(req, res, bodyParams);
         break;
+      default:
+        break;
     }
-    });
+  });
 };
 
 
