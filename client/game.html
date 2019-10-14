@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyVGList | </title>
+    <link href="style/main.css" type="text/css" rel="stylesheet" />
+    <link href="style/game.css" type="text/css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/00d9cc7b2a.js" crossorigin="anonymous"></script>
+    <script src="js/syndicates.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <nav>
+        <h1 id="site-title"><a href="/">MyVGList</a></h1>
+        <div id="compressed-spacer" class="spacer"></div>
+        <div id="dropdown">
+            <i class="fas fa-lg fa-bars"></i>
+        </div>
+        <a href="/"><span><i class="fas fa-home"></i> Home</span></a>
+        <a id="user-link" href><span><i class="fas fa-user"></i> My Page</span></a>
+        <div id="initial-spacer" class="spacer"></div>
+        <div id="search-container">
+            <div class="search" id="header-bar">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" autocomplete="off" autocapitalize="off" autocorrect="off" />
+                </div>
+                <div class="suggestions"></div>
+            </div>
+        </div>
+    </nav>
+    <div id="header-bg-container">
+        <div id="header-bg"></div>
+    </div>
+    <div id="content">
+        <div id="image-div">
+            <div id="cover-container">
+                <img id="cover" />
+            </div>
+        </div>
+        <div id="text-div">
+            <div id="title-div">
+                <h1 id="title"></h1>
+            </div>
+            <div id="content-div">
+                <div id="button-div">
+                    <button class="add" disabled>
+                        <i class="fas fa-2x fa-plus-square"></i>
+                        <!-- <span>Add Game to Collection</span> -->
+                    </button>
+                </div>
+                <div id="summary">
+                    <strong>Summary:</strong>
+                </div>
+                <div id="platforms">
+                    <strong>Platforms:</strong>
+                </div>
+                <div id="release-date">
+                    <strong>Release Date:</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+
+        const handleUserInfo = (userXHR, gameName) => {
+            if (userXHR.status === 404) return;
+
+            button.removeAttribute("disabled");
+            if (userXHR.response.games[gameName]) {
+                button.className = "remove";
+                button.onclick = removeGameHandler;
+            }
+            else {
+                button.onclick = addGameHandler;
+            }
+
+        }
+
+        const addGame = (e, gameName, id) => {
+            console.log("hello");
+            const status = "playing" // didn't get a chance to implement :(
+
+            //create a new Ajax request (remember this is asynchronous)
+            const xhr = new XMLHttpRequest();
+            //set the method (POST) and url (action field from form)
+            xhr.open("POST", "/addGame");
+
+            //set our request type to x-www-form-urlencoded
+            //which is one of the common types of form data. 
+            //This type has the same format as query strings key=value&key2=value2
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            //set our requested response type in hopes of a JSON response
+            xhr.setRequestHeader('Accept', 'application/json');
+
+            //set our function to handle the response
+            xhr.onload = () => {
+                location.reload();
+            }
+
+            //build our x-www-form-urlencoded format. Without ajax the 
+            //browser would do this automatically but it forcefully changes pages
+            //which we don't want.
+            //The format is the same as query strings, so key=value&key2=value2
+            //The 'name' fields from the inputs are the variable names sent to
+            //the server. 
+            //So ours might look like  name=test&age=22
+            //Again the 'name' fields in the form are the variable names in the string
+            //and the variable names the server will look for.
+            const formData = `name=${localStorage.username}&game=${gameName}&id=${id}&status=${status}`;
+
+            //send our request with the data
+            xhr.send(formData);
+
+            //prevent the browser's default action (to send the form on its own)
+            e.preventDefault();
+            //return false to prevent the browser from trying to change page
+            return false;
+        };
+
+        const removeGame = (e, gameName) => {
+            //create a new Ajax request (remember this is asynchronous)
+            const xhr = new XMLHttpRequest();
+            //set the method (POST) and url (action field from form)
+            xhr.open("POST", "/removeGame");
+
+            //set our request type to x-www-form-urlencoded
+            //which is one of the common types of form data. 
+            //This type has the same format as query strings key=value&key2=value2
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            //set our requested response type in hopes of a JSON response
+            xhr.setRequestHeader('Accept', 'application/json');
+
+            //set our function to handle the response
+            xhr.onload = () => {
+                location.reload();
+            }
+
+            //build our x-www-form-urlencoded format. Without ajax the 
+            //browser would do this automatically but it forcefully changes pages
+            //which we don't want.
+            //The format is the same as query strings, so key=value&key2=value2
+            //The 'name' fields from the inputs are the variable names sent to
+            //the server. 
+            //So ours might look like  name=test&age=22
+            //Again the 'name' fields in the form are the variable names in the string
+            //and the variable names the server will look for.
+            const formData = `name=${localStorage.username}&game=${gameName}`;
+
+            //send our request with the data
+            xhr.send(formData);
+
+            //prevent the browser's default action (to send the form on its own)
+            e.preventDefault();
+            //return false to prevent the browser from trying to change page
+            return false;
+        };
+        let button;
+        let addGameHandler, removeGameHandler;
+        window.onload = (e) => {
+            const gameId = parseQuery(location.search).id;
+            if (gameId === null) return;
+
+            const title = document.querySelector("title");
+            const cover = document.querySelector("#cover");
+            const heading = document.querySelector("h1#title");
+            const bg = document.querySelector("#header-bg");
+            button = document.querySelector("#button-div button");
+            const summary = document.querySelector("#summary");
+            const platforms = document.querySelector("#platforms");
+            const releaseDate = document.querySelector("#release-date");
+
+            const apiReq = new XMLHttpRequest();
+
+            apiReq.open("GET", `/getGameInfo${location.search}`)
+            apiReq.responseType = "json";
+            apiReq.setRequestHeader("Accept", "application/json");
+
+            apiReq.onload = (e) => {
+                const gameInfo = apiReq.response.igdb_info;
+
+                title.innerHTML = `${title.innerHTML}${gameInfo.name}`;
+
+                const coverId = gameInfo.cover ? gameInfo.cover.image_id : "nocover_qhhlj6";
+                cover.src = getIGDBImg("cover_big", coverId);
+                heading.innerHTML = gameInfo.name;
+
+                // formats summary by replacing all newline chars with line break elements
+                const fmtdSummary = gameInfo.summary.replace(/\n/gi, "<br />");
+
+                summary.innerHTML = `${summary.innerHTML}${fmtdSummary}`;
+
+                for (let platform of gameInfo.platforms) {
+                    platforms.innerHTML = `${platforms.innerHTML}${platform.name}, `;
+                }
+
+                // take out the last comma
+                platforms.innerHTML = platforms.innerHTML.substring(0, platforms.innerHTML.lastIndexOf(','));
+
+                // get first release date as date
+                const dateReleaseDate = new Date(gameInfo.first_release_date * 1000);
+                const releaseDateString = `${monthNames[dateReleaseDate.getUTCMonth()]} ${dateReleaseDate.getUTCDate()}, ${dateReleaseDate.getUTCFullYear()}`;
+
+                releaseDate.innerHTML = `${releaseDate.innerHTML}${releaseDateString}`
+
+                // get random bg image
+                const randIndex = Math.floor(Math.random() * gameInfo.screenshots.length);
+                const bgImage = getIGDBImg("screenshot_huge", gameInfo.screenshots[randIndex].image_id);
+                bg.style.backgroundImage = `url(${bgImage})`;
+
+                // check user to see whether user is logged in & already has game in their collection
+                if (!userXHR) return;
+
+                addGameHandler = (e) => addGame(e, gameInfo.name, gameInfo.id);
+                removeGameHandler = (e) => removeGame(e, gameInfo.name);
+
+                console.log(addGameHandler);
+
+                if (userXHR.readyState == XMLHttpRequest.DONE) handleUserInfo(userXHR, gameInfo.name);
+                else userXHR.addEventListener("load", () => handleUserInfo(userXHR, gameInfo.name));
+            }
+
+            apiReq.send();
+
+
+        }
+
+    </script>
+</body>
+
+</html>

@@ -194,6 +194,28 @@
       //return false to prevent page redirection from a form
       return false;
     };
+
+    const grabSuggestions = (e, gameField) => {
+      //create a new AJAX request (asynchronous)
+      const xhr = new XMLHttpRequest();
+      //setup connect using the selected method and url
+      xhr.open("POST", "/suggestions");
+      //set accept header in request to application/json
+      //The accept header is a comma separated list of
+      //accepted response types in order of preference
+      //from first to last. You only need to send one
+      //but you can send many, separated by commas.
+      xhr.setRequestHeader('Accept', 'application/json');
+
+      xhr.responseType = "json";
+      //if get request or head request
+      xhr.onload = (e) => {
+        console.log(xhr.response);
+      }
+      //send ajax request
+      xhr.send(`q=${gameField.value}`);
+    }
+
     const init = () => {
       // POST form
       //grab form
@@ -208,7 +230,14 @@
       // GET/HEAD form
       //grab form
       const gameForm = document.querySelector('#gameForm');
-      
+
+      const gameField = gameForm.querySelector('#gameField');
+
+
+      const suggestions = (e) => grabSuggestions(e, gameField);
+
+      gameField.addEventListener('input', suggestions);
+
       //function to handle our request
       const addGame = (e) => addGamePost(e, gameForm);
       

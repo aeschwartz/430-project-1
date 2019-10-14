@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyVGList | Home</title>
+    <link href="style/main.css" type="text/css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/00d9cc7b2a.js" crossorigin="anonymous"></script>
+    <script src="js/syndicates.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <div id="login-flex">
+        <nav>
+            <h1 id="site-title"><a href="/">MyVGList</a></h1>
+            <div id="compressed-spacer" class="spacer"></div>
+            <div id="dropdown">
+                <i class="fas fa-lg fa-bars"></i>
+            </div>
+            <a href="/"><span><i class="fas fa-home"></i> Home</span></a>
+            <a id="user-link" href><span><i class="fas fa-user"></i> My Page</span></a>
+            <div id="initial-spacer" class="spacer"></div>
+            <div id="search-container">
+                <div class="search" id="header-bar">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="search-input" autocomplete="off" autocapitalize="off"
+                            autocorrect="off" />
+                    </div>
+                    <div class="suggestions"></div>
+                </div>
+            </div>
+        </nav>
+        <section id="login-page">
+            <form id="login-form" action="addUser" method="POST">
+                <h2>Log in:</h2>
+                <label for="username">Username:</label>
+                <input name="name" type="text" />
+                <div id="response-text"></div>
+                <input type="submit" value="Log in" />
+            </form>
+        </section>
+    </div>
+    <script>
+        // if user is logged in, redirect them to their page
+        if (localStorage.username) location.href = `/user?name=${localStorage.username}`;
+
+        const addUser = (e, loginForm) => {
+            //grab the forms action (url to go to)
+            //and method (HTTP method - POST in this case)
+            const nameAction = loginForm.getAttribute('action');
+            const nameMethod = loginForm.getAttribute('method');
+
+            //grab the form's name and age fields so we can check user input
+            const nameField = loginForm.querySelector('[name=name]');
+
+            // solution for storing user for this project
+            // better in a real project to have an encrypted password val, SSO, and cookies for stuff like this
+            localStorage.username = nameField.value;
+
+            //create a new Ajax request (remember this is asynchronous)
+            const xhr = new XMLHttpRequest();
+            //set the method (POST) and url (action field from form)
+            xhr.open(nameMethod, nameAction);
+
+            //set our request type to x-www-form-urlencoded
+            //which is one of the common types of form data. 
+            //This type has the same format as query strings key=value&key2=value2
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            //set our requested response type in hopes of a JSON response
+            xhr.setRequestHeader('Accept', 'application/json');
+
+            // set response type to json, so that xhr.response is already a JS Object.
+            xhr.responseType = "json";
+
+            //set our function to handle the response
+            xhr.onload = (loadE) => {
+                if (xhr.status == 201 || xhr.status == 409) {
+                    location.href = `/user?name=${localStorage.username}`;
+                    return; // not necessary, since this already loads page
+                }
+                else if (xhr.status == 400) {
+                    loginForm.querySelector("#response-text").innerHTML = xhr.response.message;
+                }
+            };
+
+            //build our x-www-form-urlencoded format. Without ajax the 
+            //browser would do this automatically but it forcefully changes pages
+            //which we don't want.
+            //The format is the same as query strings, so key=value&key2=value2
+            //The 'name' fields from the inputs are the variable names sent to
+            //the server. 
+            //So ours might look like  name=test&age=22
+            //Again the 'name' fields in the form are the variable names in the string
+            //and the variable names the server will look for.
+            const formData = `name=${nameField.value}`;
+
+            //send our request with the data
+            xhr.send(formData);
+
+            //prevent the browser's default action (to send the form on its own)
+            e.preventDefault();
+            //return false to prevent the browser from trying to change page
+            return false;
+        };
+        window.onload = (e) => {
+            // POST form
+            //grab form
+            const loginForm = document.querySelector('#login-form');
+
+            //create handler
+            const addUserHandler = (e) => addUser(e, loginForm);
+
+            //attach submit event (for clicking submit or hitting enter)
+            loginForm.addEventListener('submit', addUserHandler);
+        }
+    </script>
+</body>

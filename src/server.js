@@ -10,12 +10,26 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 const urlStruct = {
   GET: {
     '/': htmlHandler.getIndex,
-    '/style.css': htmlHandler.getCSS,
+    '/game': htmlHandler.getGame,
+    '/login': htmlHandler.getLogin,
+    '/user': htmlHandler.getUser,
+    '/style/main.css': htmlHandler.getCSS,
+    '/style/game.css': htmlHandler.getGameCSS,
+    '/style/user.css': htmlHandler.getUserCSS,
+    '/js/syndicates.js': htmlHandler.getSyndicatedScript,
     '/getUsers': jsonHandler.getUsers,
+    '/getUser': jsonHandler.getUser,
+    '/getGameInfo': jsonHandler.getGameInfo,
+    '/getGameCovers': jsonHandler.getGameCovers,
+    '/suggestions': jsonHandler.getSuggestions,
     notReal: jsonHandler.notReal,
   },
   HEAD: {
     '/getUsers': jsonHandler.getUsers,
+    '/getUser': jsonHandler.getUser,
+    '/getGameInfo': jsonHandler.getGameInfo,
+    '/getGameCovers': jsonHandler.getGameCovers,
+    '/suggestions': jsonHandler.getSuggestions,
     notReal: jsonHandler.notReal,
   },
 };
@@ -58,6 +72,9 @@ const handlePost = (req, res, parsedUrl) => {
       case '/addGame':
         jsonHandler.addGame(req, res, bodyParams);
         break;
+      case '/removeGame':
+        jsonHandler.removeGame(req, res, bodyParams);
+        break;
       default:
         break;
     }
@@ -79,9 +96,9 @@ const onRequest = (req, res) => {
   if (req.method === 'POST') {
     handlePost(req, res, parsedUrl);
   } else if (urlStruct[req.method][parsedUrl.pathname]) {
-    urlStruct[req.method][parsedUrl.pathname](req, res);
+    urlStruct[req.method][parsedUrl.pathname](req, res, args);
   } else {
-    urlStruct[req.method].notReal(req, res);
+    urlStruct[req.method].notReal(req, res, args);
   }
 };
 
